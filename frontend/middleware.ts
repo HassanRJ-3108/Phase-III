@@ -5,39 +5,11 @@ import type { NextRequest } from 'next/server';
 
 /**
  * Validate domain allowlist
- * Returns true if domain is allowed, false otherwise
+ * DISABLED FOR HACKATHON - Always returns true
  */
 function isAllowedDomain(request: NextRequest): boolean {
-  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'development';
-
-  // Development: Allow all domains
-  if (environment === 'development') {
-    return true;
-  }
-
-  const hostname = request.nextUrl.hostname;
-  const allowedDomainsEnv = process.env.NEXT_PUBLIC_ALLOWED_DOMAINS || '';
-
-  if (!allowedDomainsEnv) {
-    console.warn('NEXT_PUBLIC_ALLOWED_DOMAINS not set for production');
-    return false;
-  }
-
-  const allowedDomains = allowedDomainsEnv.split(',').map((d) => d.trim());
-
-  // Check exact match
-  if (allowedDomains.includes(hostname)) {
-    return true;
-  }
-
-  // Check wildcard subdomain (*.example.com)
-  return allowedDomains.some((allowed) => {
-    if (allowed.startsWith('*.')) {
-      const baseDomain = allowed.slice(2);
-      return hostname.endsWith(`.${baseDomain}`) || hostname === baseDomain;
-    }
-    return false;
-  });
+  // Allow all domains for hackathon deployment
+  return true;
 }
 
 export function middleware(request: NextRequest) {
@@ -58,11 +30,11 @@ export function middleware(request: NextRequest) {
 
   // 2. Authentication Check
   const token = request.cookies.get('auth_token')?.value ||
-                request.headers.get('authorization')?.replace('Bearer ', '');
+    request.headers.get('authorization')?.replace('Bearer ', '');
 
   // Check if trying to access protected routes (tasks or chat)
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/tasks') ||
-                           request.nextUrl.pathname.startsWith('/chat');
+    request.nextUrl.pathname.startsWith('/chat');
 
   // If protected route and no token, redirect to signin
   if (isProtectedRoute && !token) {
@@ -72,7 +44,7 @@ export function middleware(request: NextRequest) {
 
   // If on signin/signup page and has token, redirect to tasks
   const isAuthRoute = request.nextUrl.pathname.startsWith('/signin') ||
-                      request.nextUrl.pathname.startsWith('/signup');
+    request.nextUrl.pathname.startsWith('/signup');
 
   if (isAuthRoute && token) {
     const tasksUrl = new URL('/tasks', request.url);
