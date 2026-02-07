@@ -43,8 +43,13 @@ export function getCurrentDomain(): string | null {
 /**
  * Check if current domain is in the allowlist
  * Returns true in development or if domain matches allowlist
+ * DISABLED FOR HACKATHON DEPLOYMENT - Always returns true
  */
 export function isAllowedDomain(): boolean {
+  // Allow all domains for hackathon deployment
+  return true;
+
+  /* Original validation code - disabled
   const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'development';
 
   // Development: Always allow
@@ -72,6 +77,7 @@ export function isAllowedDomain(): boolean {
   });
 
   return wildcardMatch;
+  */
 }
 
 /**
