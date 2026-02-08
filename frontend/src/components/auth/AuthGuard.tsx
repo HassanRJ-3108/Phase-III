@@ -21,14 +21,25 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    // Check authentication status by calling backend
+    // Check authentication status
     const checkAuth = async () => {
       try {
+        // Get token from localStorage
+        const token = localStorage.getItem('access_token');
+
+        if (!token) {
+          // No token, redirect to login
+          setIsAuth(false);
+          setIsChecking(false);
+          router.push('/signin');
+          return;
+        }
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/me`, {
           method: 'GET',
-          credentials: 'include', // Include httpOnly cookies
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -37,7 +48,8 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
           setIsAuth(true);
           setIsChecking(false);
         } else {
-          // Not authenticated, redirect to login
+          // Token invalid, clear and redirect
+          localStorage.removeItem('access_token');
           setIsAuth(false);
           setIsChecking(false);
           router.push('/signin');
@@ -58,10 +70,10 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   if (isChecking) {
     return (
       fallback || (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen bg-black">
           <div className="text-center">
-            <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-600">Checking authentication...</p>
+            <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-400">Loading...</p>
           </div>
         </div>
       )
@@ -76,3 +88,4 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   // Render children if authenticated
   return <>{children}</>;
 }
+
