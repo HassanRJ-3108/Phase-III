@@ -49,12 +49,15 @@ async function request<T = unknown>(
 ): Promise<HttpResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
 
+  // Get token from localStorage if available
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
-    credentials: 'include', // Include httpOnly cookies (JWT)
     ...options,
   };
 
